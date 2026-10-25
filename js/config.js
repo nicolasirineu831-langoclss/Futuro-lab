@@ -8,4 +8,4 @@ export const TUTOR_ENDPOINT = null;
 // NUNCA use a chave "service_role" neste arquivo.
 // Exemplo: SUPABASE_URL = 'https://abcdxyz.supabase.co'
 export const SUPABASE_URL = 'https://sdgnrmmpsscahbankata.supabase.co';
-export const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ25ybW1wc3NjYWhiYW5rYXRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NjUyODYsImV4cCI6MjEwODU0MTI4Nn0.-14hhf75mj1goZ7x1HVGk0vVhM8NBvade2RzLRQAblE;
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZ25ybW1wc3NjYWhiYW5rYXRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NjUyODYsImV4cCI6MjEwODU0MTI4Nn0.-14hhf75mj1goZ7x1HVGk0vVhM8NBvade2RzLRQAblE;'
