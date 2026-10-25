@@ -5,6 +5,7 @@ import { COURSES } from '../data/courses.js';
 import { courseStatus, courseProgress } from '../services/progress.js';
 import { currentStreak, totalXp, levelInfo } from '../services/gamification.js';
 import { achievementStatus } from '../services/achievements.js';
+import { renderAccountCard } from './auth.js';
 
 function download(filename, text) {
   const blob = new Blob([text], { type: 'application/json' });
@@ -76,7 +77,7 @@ export function renderProfile(outlet, ctx) {
 
   const nameCard = card(
     's-6',
-    sectionTitle('Nome de exibição'),
+    sectionTitle('Nome neste aparelho'),
     nameForm({ value: state.profile.name, onSaved: () => ctx.navigate('/perfil') }),
   );
 
@@ -128,15 +129,12 @@ export function renderProfile(outlet, ctx) {
     ),
   );
 
-  const accountNotice = notice(
-    'info',
-    'Esta versão não tem conta online: não há login, senha nem sincronização entre aparelhos. Os dados ficam apenas neste navegador. Para contas reais, é preciso um backend com autenticação no servidor.',
-    'info',
-  );
+  const accountHost = el('div', { class: 'dash-grid' });
+  renderAccountCard(accountHost);
 
   outlet.append(
     pageHead('Sua conta neste aparelho', 'Perfil'),
-    accountNotice,
+    accountHost,
     el('div', { class: 'dash-grid' }, identity, summary, courseList, nameCard, dataCard, achievementsCard),
     el('p', { class: 'help' }, tag('XP', 'accent'), ' Os pontos são concedidos uma única vez por ação. Desfazer uma conclusão não retira o XP já recebido.'),
   );
