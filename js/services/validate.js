@@ -9,3 +9,19 @@ export function validateName(raw) {
   }
   return { ok: true, value };
 }
+
+export function validateEmail(raw) {
+  const value = String(raw ?? '').trim();
+  if (!value) return 'Informe seu e-mail.';
+  if (value.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) return 'Informe um e-mail válido.';
+  return null;
+}
+
+export function validatePassword(raw) {
+  const value = String(raw ?? '');
+  if (!value) return 'Informe uma senha.';
+  if (value.length < 8) return 'A senha precisa ter pelo menos 8 caracteres.';
+  if (value.length > 72) return 'Use no máximo 72 caracteres.';
+  if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) return 'Use letras e números na senha.';
+  return null;
+}
