@@ -132,3 +132,85 @@ Antes de publicar, abra a aplicação em um navegador e confira:
 6. Iniciar o temporizador, trocar de tela e voltar, confirmando que ele continua contando.
 7. Abrir o navegador com armazenamento bloqueado e confirmar que os avisos de erro aparecem.
 8. Testar leitura de tela e navegação só com teclado nas telas principais.
+
+---
+
+## Conta online (Supabase)
+
+Por padrão o site funciona **sem conta**, com dados no navegador. Para ativar contas, banco e áreas de estudante e professor, siga os passos abaixo. Até concluí-los, as telas de conta mostram que a conta não está configurada.
+
+### 1. Criar o projeto
+
+1. Crie uma conta gratuita em https://supabase.com e um projeto novo.
+2. Em **SQL Editor**, cole o conteúdo de `supabase/migrations/0001_schema.sql` e execute **uma única vez** em projeto novo.
+3. Em **Project Settings → API**, copie a **Project URL** e a chave **anon / publishable**.
+
+### 2. Configurar o site
+
+Edite `js/config.js` e preencha:
+
+```js
+export const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+export const SUPABASE_ANON_KEY = 'SUA-CHAVE-PUBLICA-ANON';
+```
+
+A chave anon é pública por desenho: a segurança depende das regras RLS do banco, não de esconder a chave. **Nunca** coloque a chave `service_role` no código.
+
+### 3. Configurar a autenticação
+
+Em **Authentication → URL Configuration**:
+
+- **Site URL**: a URL publicada, por exemplo `https://SEU-USUARIO.github.io/futurolab/`.
+- **Redirect URLs**: inclua a mesma URL com `/**` no fim, por exemplo `https://SEU-USUARIO.github.io/futurolab/**`.
+
+Em **Authentication → Providers → Email**, mantenha a confirmação de e-mail ligada (recomendado). Os modelos de e-mail de confirmação e recuperação podem ser traduzidos em **Authentication → Email Templates**.
+
+### 4. Criar o primeiro administrador
+
+Todo cadastro público vira **estudante**. Para tornar uma conta administradora (ou professora), cadastre-a normalmente e depois execute no **SQL Editor**:
+
+```sql
+update public.profiles set role = 'teacher' where id = (
+  select id from auth.users where email = 'professor@exemplo.com'
+);
+```
+
+Use `'admin'` para administrador. Essa alteração só funciona pelo SQL Editor (sem usuário autenticado); a própria aplicação não consegue elevar um papel.
+
+### O que o banco garante
+
+- Estudante só vê cursos publicados, e só vê atividades e entregas dos cursos em que está matriculado.
+- Rascunhos ficam visíveis apenas ao professor responsável e ao administrador.
+- Cursos com acesso **aberto** permitem matrícula do próprio estudante; os demais exigem que o professor libere a matrícula.
+- Estudante não consegue ver a nota de outro estudante, nem alterar a própria nota.
+- Uma entrega corrigida não pode mais ser alterada pelo estudante.
+- A nota não pode passar do valor da atividade.
+- Entregas são recusadas depois do prazo.
+- Professores só gerenciam os próprios cursos. Administradores gerenciam todos.
+- Estudante não consegue mudar o próprio papel.
+
+### O que está pronto e o que falta
+
+**Funcionando com conta (verificado com cliente falso, não com o Supabase real):**
+- Cadastro, entrada, saída, recuperação e redefinição de senha.
+- Cartão de conta no perfil, com edição do nome.
+- Catálogo de cursos online, matrícula e abertura de curso.
+- Envio de entrega (rascunho ou definitiva) e visualização da nota e do feedback.
+- Área do professor: criar e publicar cursos, criar atividades, ver entregas e corrigir com nota e feedback.
+- Migração SQL com RLS, triggers de integridade e notificações de atividade publicada e de correção.
+
+**Ainda não implementado:**
+- Módulos e aulas no banco (hoje os cursos online têm atividades, sem aulas próprias).
+- Importação de PDF, DOCX, PPTX e outros arquivos. Exige armazenamento de arquivos no Supabase (Storage) e extração de texto.
+- Inteligência artificial para resumos e exercícios. Exige endpoint próprio (ver `TUTOR_ENDPOINT`).
+- Certificados com verificação.
+- Notificações por e-mail.
+- Lista de notificações do banco dentro da interface (os avisos ainda são locais).
+- Progresso, anotações e favoritos salvos na conta (hoje ficam no navegador).
+- Novos conteúdos de informática, Office, redes e programação no formato online.
+- Estratégia de backup documentada: o Supabase faz backups automáticos nos planos pagos. Em plano gratuito, exporte o banco periodicamente pelo SQL Editor.
+
+### Testes dessa parte
+
+- `tests/backend-smoke.mjs` percorre as telas de conta com um cliente falso e verifica que elas renderizam, que o modo conta é ativado e que nenhuma promessa fica sem tratamento.
+- **As regras de RLS e os triggers não foram executados contra um Postgres real.** Eles precisam ser testados no seu projeto Supabase: crie uma conta de estudante e tente, pelo navegador ou pela API, acessar um rascunho, a nota de outro estudante e alterar um papel. Todas essas tentativas devem falhar.
