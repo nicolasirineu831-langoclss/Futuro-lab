@@ -1,5 +1,6 @@
 import { el, icon, avatar } from './ui.js';
 import { getState, subscribe } from './store.js';
+import { backendEnabled, getSession } from './services/backend.js';
 
 export const NAV = [
   { path: '/', label: 'Início', icon: 'home' },
@@ -57,7 +58,7 @@ export function renderShell(root) {
   );
 
   const bellSlot = el('span', { class: 'bell-slot' });
-  const avatarSlot = el('a', { class: 'avatar-link', href: '#/perfil', 'aria-label': 'Abrir perfil' });
+  const avatarSlot = el('div', { class: 'account-slot' });
   const topActions = el('div', { class: 'top-actions' }, bellSlot, avatarSlot);
   const topbar = el('header', { class: 'topbar' }, brand(), topActions);
 
@@ -88,8 +89,13 @@ export function renderShell(root) {
         unread ? el('span', { class: 'badge', 'aria-hidden': 'true' }, unread > 9 ? '9+' : String(unread)) : null,
       ),
     );
-    avatarSlot.replaceChildren(avatar(state.profile.name));
-    avatarSlot.title = state.profile.name || 'Perfil';
+    const session = getSession();
+    if (backendEnabled && !session.user) {
+      avatarSlot.replaceChildren(el('a', { class: 'btn btn-ghost btn-compact', href: '#/entrar' }, 'Entrar'));
+    } else {
+      const name = backendEnabled ? session.profile?.full_name ?? '' : state.profile.name;
+      avatarSlot.replaceChildren(el('a', { class: 'avatar-link', href: '#/perfil', 'aria-label': 'Abrir perfil', title: name || 'Perfil' }, avatar(name)));
+    }
   }
 
   function refresh(path) {

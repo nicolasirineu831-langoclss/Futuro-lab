@@ -2,6 +2,7 @@ import { renderShell } from './layout.js';
 import { startRouter, route } from './router.js';
 import { emptyState } from './ui.js';
 import { seedDemoData } from './store.js';
+import { initBackend, onSessionChange } from './services/backend.js';
 import { syncAchievements } from './services/achievements.js';
 import { refreshReminders } from './services/notifications.js';
 import { renderDashboard } from './pages/dashboard.js';
@@ -20,8 +21,14 @@ import { renderTutor } from './pages/tutor.js';
 import { renderNotifications } from './pages/notifications.js';
 import { renderProfile } from './pages/profile.js';
 import { renderMore } from './pages/more.js';
+import { renderLogin, renderSignup, renderForgot, renderReset } from './pages/auth.js';
+import { renderOnlineCatalog, renderOnlineCourse } from './pages/online.js';
+import { renderTeacherHome, renderTeacherCourse } from './pages/teacher.js';
 
-// Exemplos iniciais (marcados e removíveis no Perfil). Só são criados uma vez.
+// 1) Sessão da conta (se configurada) antes de qualquer tela.
+await initBackend();
+
+// 2) Exemplos locais iniciais (removíveis no Perfil).
 seedDemoData();
 
 const app = document.getElementById('app');
@@ -51,6 +58,19 @@ route('/avisos', renderNotifications);
 route('/perfil', renderProfile);
 route('/mais', renderMore);
 
+// Conta online
+route('/entrar', renderLogin);
+route('/cadastro', renderSignup);
+route('/esqueci-senha', renderForgot);
+route('/redefinir-senha', renderReset);
+route('/online', renderOnlineCatalog);
+route('/online/:id', renderOnlineCourse);
+route('/professor', renderTeacherHome);
+route('/professor/cursos/:id', renderTeacherCourse);
+
+// Quando a sessão muda (entrar, sair, recuperar senha), atualiza o topo e a tela atual.
+onSessionChange(() => shell.refresh(location.hash.replace(/^#/, '') || '/'));
+
 startRouter({
   outlet: shell.main,
   onRender: (path) => {
@@ -69,3 +89,4 @@ startRouter({
     );
   },
 });
+
